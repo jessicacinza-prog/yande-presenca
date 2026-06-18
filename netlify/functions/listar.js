@@ -20,8 +20,20 @@ exports.handler = async (event) => {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
     await sql`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'presencas' AND column_name = 'id' AND is_identity = 'NO'
+        ) THEN
+          DROP TABLE presencas;
+        END IF;
+      END $$;
+    `;
+
+    await sql`
       CREATE TABLE IF NOT EXISTS presencas (
-        id BIGINT PRIMARY KEY,
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         nome TEXT NOT NULL,
         tipo TEXT NOT NULL,
         data DATE NOT NULL,
@@ -32,7 +44,7 @@ exports.handler = async (event) => {
       )
     `;
 
-    const rows = await sql`SELECT id, nome, tipo, to_char(data, 'YYYY-MM-DD') as data, hora, distancia, perto FROM presencas ORDER BY id ASC`;
+    const rows = await sql`SELECT id::int AS id, nome, tipo, to_char(data, 'YYYY-MM-DD') as data, hora, distancia, perto FROM presencas ORDER BY id ASC`;
 
     return { statusCode: 200, headers, body: JSON.stringify({ dados: rows }) };
   } catch (err) {

@@ -19,10 +19,22 @@ exports.handler = async (event) => {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
+    await sql`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'presencas' AND column_name = 'id' AND is_identity = 'NO'
+        ) THEN
+          DROP TABLE presencas;
+        END IF;
+      END $$;
+    `;
+
     // Garante que a tabela existe
     await sql`
       CREATE TABLE IF NOT EXISTS presencas (
-        id BIGINT PRIMARY KEY,
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         nome TEXT NOT NULL,
         tipo TEXT NOT NULL,
         data DATE NOT NULL,
@@ -40,11 +52,10 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Dados incompletos' }) };
     }
 
-    const id = Date.now();
-
-    await sql`
-      INSERT INTO presencas (id, nome, tipo, data, hora, distancia, perto)
-      VALUES (${id}, ${nome.trim()}, ${tipo}, ${data}, ${hora}, ${distancia ?? null}, ${perto ?? null})
+    const [{ id }] = await sql`
+      INSERT INTO presencas (nome, tipo, data, hora, distancia, perto)
+      VALUES (${nome.trim()}, ${tipo}, ${data}, ${hora}, ${distancia ?? null}, ${perto ?? null})
+      RETURNING id
     `;
 
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, id }) };
