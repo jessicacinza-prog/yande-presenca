@@ -26,7 +26,7 @@ A forma mais simples, sem precisar instalar nada no computador:
 1. Vá em **Project settings → Environment variables**
 2. Clique em "Add a variable"
 3. Nome: `RELATORIO_SENHA`
-4. Valor: `grupocultural2026` (ou outra senha de sua preferência)
+4. Valor: escolha uma senha só sua (não use uma senha de exemplo pública)
 5. Salve
 
 ## 5. Re-publicar (trigger deploy)
@@ -50,4 +50,4 @@ Se quiser usar algo como `presenca.jessicacinza.com`:
 
 ---
 
-**Importante:** mude a senha no passo 4 para algo só seu se preferir não usar a sugerida. Guarde essa senha — é ela que protege o relatório.
+**Importante:** escolha no passo 4 uma senha só sua e guarde-a — é ela que protege o relatório. Nunca coloque a senha real neste arquivo (o repositório pode ser público).
